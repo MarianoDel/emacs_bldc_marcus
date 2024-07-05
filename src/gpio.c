@@ -116,10 +116,10 @@ void GpioInit (void)
     GPIOB->CRL = temp;
 
     //--- GPIOB High Side -------------------//
-    // temp = GPIOB->CRH;    //PB8 PB9 output; PB10-PB11 Alternative (Usart3)
-    // temp &= 0xFFFF0000;
-    // temp |= 0x00008A22;
-    // GPIOB->CRH = temp;    
+    temp = GPIOB->CRH;    //PB8 output; PB9 input;
+    temp &= 0xFFFFFF00;
+    temp |= 0x00000042;
+    GPIOB->CRH = temp;    
     
     //--- GPIOC Low Side -------------------//
     // temp = GPIOC->CRL;    //PC0-PC1 output; PC6-PC7 output

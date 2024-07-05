@@ -11,6 +11,7 @@
 // Includes --------------------------------------------------------------------
 #include "pwm.h"
 #include "hard.h"
+#include "stm32f10x.h"
 #include "tim.h"
 #include "dsp.h"
 #include "adc.h"
@@ -51,37 +52,43 @@ void Pwm_W (unsigned short a)
 
 void Low_U_Reset (void)
 {
-    Pb5_Off();
+    // Pb5_Off();
+    LOW_U_OFF;
 }
 
 
 void Low_V_Reset (void)
 {
-    Pb6_Off();
+    // Pb6_Off();
+    LOW_V_OFF;
 }
 
 
 void Low_W_Reset (void)
 {
-    Pb7_Off();
+    // Pb7_Off();
+    LOW_W_OFF;
 }
 
 
 void Low_U_Set (void)
 {
-    Pb5_On();
+    // Pb5_On();
+    LOW_U_ON;
 }
 
 
 void Low_V_Set (void)
 {
-    Pb6_On();
+    // Pb6_On();
+    LOW_V_ON;
 }
 
 
 void Low_W_Set (void)
 {
-    Pb7_On();
+    // Pb7_On();
+    LOW_W_ON;
 }
 
 

@@ -14,16 +14,17 @@
 
 //--- Defines for conf clocks -------
 // Select Clock Source
-// #define HSI_INTERNAL_RC
-#define HSE_CRYSTAL_OSC
+#define HSI_INTERNAL_RC
+// #define HSE_CRYSTAL_OSC
 
 // Select Sysclk frequency
 // #define SYSCLK_FREQ_72MHz
-#define SYSCLK_FREQ_48MHz
+#define SYSCLK_FREQ_64MHz
+// #define SYSCLK_FREQ_48MHz
 // #define SYSCLK_FREQ_8MHz
 
 // Select Xtal frequency
-#define CRYSTAL_8MHZ
+// #define CRYSTAL_8MHZ
 // #define CRYSTAL_12MHZ
 
 

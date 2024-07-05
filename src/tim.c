@@ -51,7 +51,9 @@ extern volatile unsigned short wait_ms_var;
 
 
 // Globals ---------------------------------------------------------------------
-volatile unsigned int tim2_increment = 0;
+volatile unsigned short pwm_input_period = 0;
+volatile unsigned short pwm_input_duty = 0;
+volatile unsigned char pwm_input_int = 0;
 
 
 // Module Functions ------------------------------------------------------------
@@ -213,24 +215,21 @@ void TIM2_Init (void)
     //Configuracion del timer.
     TIM2->CR1 = 0x0000;        //clk int / 1; upcounting;
     TIM2->CR2 = 0x0000;
-    
-    // TIM2->SMCR |= TIM_SMCR_SMS_2 |TIM_SMCR_SMS_1 | TIM_SMCR_TS_1 | TIM_SMCR_TS_0;    //reset mode
-    // TIM2->SMCR |= TIM_SMCR_SMS_2;    //reset mode link timer1    OJO no anda
-    // TIM2->SMCR |= TIM_SMCR_SMS_2 | TIM_SMCR_SMS_1;    //trigger mode link timer1
-    // TIM2->SMCR = 0x0000;    //
 
-    // TIM2->CCMR1 = 0x6000;            //CH2 output PWM mode 1
-    // TIM2->CCMR1 = 0x0060;            //CH1 output PWM mode 1
-    // TIM2->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P;    //CH1 enable on pin active high
-    // TIM2->CCER |= TIM_CCER_CC2E | TIM_CCER_CC2P;    //CH2 enable on pin active high
+    // pwm input mode (input on CH2), pwm freq on CH2, duty on CH1
+    TIM2->SMCR = TIM_SMCR_SMS_2 | TIM_SMCR_TS_2 | TIM_SMCR_TS_1;    //reset mode on TI2FP2 trigger
+
+    TIM2->CCMR1 = TIM_CCMR1_CC2S_0 | TIM_CCMR1_CC1S_1;    //CH2 input TI2, CH1 input on TI2FP1
+    TIM2->CCMR1 |= TIM_CCMR1_IC2F_3 | TIM_CCMR1_IC2F_2 | TIM_CCMR1_IC2F_1 | TIM_CCMR1_IC2F_0;    // filtered
+    TIM2->CCER = TIM_CCER_CC2E | TIM_CCER_CC1E | TIM_CCER_CC1P;    //CH2 CH1 enable capture, CH1 on falling
     
-    // TIM2->ARR = 48 - 1;    // 1us @ 48MHz
-    TIM2->ARR = 480 - 1;    // 10us @ 48MHz    
+    TIM2->ARR = 0xFFFF;    // tops 16bits (65ms on 1MHz) (1.36ms on 48MHz)
     TIM2->CNT = 0;
-    TIM2->PSC = 0;
+    TIM2->PSC = 64 - 1;    // 1us counter
 
     // Enable timer
-    TIM2->DIER |= TIM_DIER_UIE;    // int on update
+    TIM2->DIER |= TIM_DIER_CC2IE;    // int on CH2 capture
+    // TIM2->DIER |= TIM_DIER_UIE;    // int on update
     TIM2->CR1 |= TIM_CR1_CEN;
 
     // NVIC Irq Enable
@@ -240,60 +239,25 @@ void TIM2_Init (void)
 }
 
 
-unsigned short signal_table [] = {524,537,549,562,574,586,599,611,623,636,
-                                  648,660,672,684,695,707,719,730,741,752,
-                                  763,774,785,795,806,816,826,836,845,855,
-                                  864,873,882,890,898,907,914,922,929,936,
-                                  943,950,956,962,968,973,979,984,988,993,
-                                  997,1000,1004,1007,1010,1013,1015,1017,1019,1020,
-                                  1021,1022,1022,1023,1022,1022,1021,1020,1019,1017,
-                                  1015,1013,1010,1007,1004,1000,997,993,988,984,
-                                  979,973,968,962,956,950,943,936,929,922,
-                                  914,907,898,890,882,873,864,855,845,836,
-                                  826,816,806,795,785,774,763,752,741,730,
-                                  719,707,695,684,672,660,648,636,623,611,
-                                  599,586,574,562,549,537,524,512,499,486,
-                                  474,461,449,437,424,412,400,387,375,363,
-                                  351,339,328,316,304,293,282,271,260,249,
-                                  238,228,217,207,197,187,178,168,159,150,
-                                  141,133,125,116,109,101,94,87,80,73,
-                                  67,61,55,50,44,39,35,30,26,23,
-                                  19,16,13,10,8,6,4,3,2,1,
-                                  1,1,1,1,2,3,4,6,8,10,
-                                  13,16,19,23,26,30,35,39,44,50,
-                                  55,61,67,73,80,87,94,101,109,116,
-                                  125,133,141,150,159,168,178,187,197,207,
-                                  217,228,238,249,260,271,282,293,304,316,
-                                  328,339,351,363,375,387,400,412,424,437,
-                                  449,461,474,486,499,511};
-
-
-volatile unsigned short last_value = 0;
-volatile unsigned int tim2_cnt = 0;
 void TIM2_IRQHandler (void)
 {
     //Code Handler    
-    if (LED)
-        LED_OFF;
-    else
-        LED_ON;
-
-    tim2_cnt += tim2_increment;
-
-    // right shift precision bits to get table index
-    // unsigned char table_index = (unsigned char) (tim2_cnt >> 8);
-    unsigned char table_index = (unsigned char) (tim2_cnt >> 12);    
-
-    unsigned short new_value = signal_table[table_index];
-    if (new_value != last_value)
-    {
-        TIM4_Update_CH1(new_value);
-        last_value = new_value;
-    }
+    // if (TIM2->SR & TIM_SR_UIF)
+    //     TIM2->SR = 0x00;
     
     // low flag
-    if (TIM2->SR & 0x01)
-        TIM2->SR = 0x00;    
+    if (TIM2->SR & TIM_SR_CC2IF)
+    {
+        pwm_input_period = TIM2->CCR2;
+        pwm_input_duty = TIM2->CCR1;
+    }
+
+    if (pwm_input_int < 4)
+        pwm_input_int++;
+    else
+        pwm_input_int = 0;
+    
+    TIM2->SR = 0x00;
 }
 
 

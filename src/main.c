@@ -56,11 +56,13 @@ int main (void)
     
     // Systick Timer Activation
     // if (SysTick_Config(72000))
-    if (SysTick_Config(48000))
+    if (SysTick_Config(64000))        
+    // if (SysTick_Config(48000))
         SysTickError();
 
     // Hardware Tests Functions
-    // TF_Hardware_Tests ();
+    TF_Hardware_Tests ();
+    // End of Hardware Tests Functions
 
     // Hardware Setup
     for (int i = 0; i < 3; i++)

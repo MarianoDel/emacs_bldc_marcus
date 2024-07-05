@@ -31,6 +31,10 @@
 // Externals -------------------------------------------------------------------
 extern volatile unsigned char adc_int_seq_ready;
 extern volatile unsigned short adc_ch [];
+extern volatile unsigned short pwm_input_period;
+extern volatile unsigned short pwm_input_duty;
+extern volatile unsigned char pwm_input_int;
+
 
 
 // Globals ---------------------------------------------------------------------
@@ -42,6 +46,7 @@ void TF_Timer1_Ch1_Ch2_Ch3_Pwm (void);
 void TF_Adc_Led_test1 (void);
 void TF_Adc_Led_test2 (void);
 void Pb5_Pb6_Pb7_On_Off (void);
+void TF_Tim2_Pwm_Input (void);
 
 
 // Module Functions ------------------------------------------------------------
@@ -55,7 +60,9 @@ void TF_Hardware_Tests (void)
 
     // TF_Adc_Led_test1 ();
 
-    Pb5_Pb6_Pb7_On_Off ();
+    // Pb5_Pb6_Pb7_On_Off ();
+
+    TF_Tim2_Pwm_Input ();
 }
 
 
@@ -167,6 +174,33 @@ void Pb5_Pb6_Pb7_On_Off (void)
         Low_V_Reset ();
         Low_W_Reset ();
         Wait_ms (5000);
+    }
+}
+
+
+void TF_Tim2_Pwm_Input (void)
+{
+    TIM2_Init();
+
+    while (1)
+    {
+        if (pwm_input_int < 2)
+        {
+            SPEED_OUT_ON;
+        }
+        else
+            SPEED_OUT_OFF;
+
+        // Wait_ms(1);
+        // LOW_U_ON;
+        // Wait_ms(1);
+        // LOW_U_OFF;
+
+        // int on TIM2, CCR1 duty, CCR2 period
+        // if (pwm_input_update)
+        // {
+        //     pwm_input_update = 0;
+        // }
     }
 }
 
