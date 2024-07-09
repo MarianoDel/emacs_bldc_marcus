@@ -82,6 +82,10 @@ typedef enum {
 #define SPEED_CTRL    ((GPIOA->IDR & 0x0002) != 0)
 
 // PA2
+#define HALL_FAIL    ((GPIOA->ODR & 0x0004) != 0)
+#define HALL_FAIL_ON    (GPIOA->BSRR = 0x00000004)
+#define HALL_FAIL_OFF    (GPIOA->BSRR = 0x00040000)
+
 // PA3
 // PA4
 // PA5    NC
@@ -106,8 +110,11 @@ typedef enum {
 // PB2 input
 #define HALL_W    ((GPIOB->IDR & 0x0004) != 0)
 
-// PB3 output
-// PB4 output    Special Function
+// PB3 input Special Function on reset
+#define CONTROL_I1    ((GPIOB->IDR & 0x0008) != 0)
+
+// PB4 input Special Function on reset
+#define CONTROL_I0    ((GPIOB->IDR & 0x0010) != 0)
 
 // PB5 output
 #define LOW_W    ((GPIOB->ODR & 0x0020) != 0)
@@ -159,13 +166,20 @@ void Pb6_Off (void);
 void Pb7_Off (void);
 
 void Hall_Update (void);
+void Hall_Update_Supervisor (void);
 unsigned char Hall_U (void);
 unsigned char Hall_V (void);
 unsigned char Hall_W (void);
 
 void Led_Toggle (unsigned short on_off_time);
 void Led_Toggle_Update (void);
-// void Hard_Timeouts (void);
+
+void HARD_Timeouts (void);
+unsigned char HARD_Check_Current_Config (void);
+
+unsigned char Brake (void);
+unsigned char Alarm_On (void);
+
 
 #endif
 

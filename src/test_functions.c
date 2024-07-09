@@ -47,6 +47,7 @@ void TF_Adc_Led_test1 (void);
 void TF_Adc_Led_test2 (void);
 void Pb5_Pb6_Pb7_On_Off (void);
 void TF_Tim2_Pwm_Input (void);
+void TF_Tim2_Pwm_Input_Tim3 (void);
 
 
 // Module Functions ------------------------------------------------------------
@@ -62,7 +63,9 @@ void TF_Hardware_Tests (void)
 
     // Pb5_Pb6_Pb7_On_Off ();
 
-    TF_Tim2_Pwm_Input ();
+    // TF_Tim2_Pwm_Input ();
+
+    TF_Tim2_Pwm_Input_Tim3 ();
 }
 
 
@@ -195,12 +198,39 @@ void TF_Tim2_Pwm_Input (void)
         // LOW_U_ON;
         // Wait_ms(1);
         // LOW_U_OFF;
+    }
+}
 
-        // int on TIM2, CCR1 duty, CCR2 period
-        // if (pwm_input_update)
-        // {
-        //     pwm_input_update = 0;
-        // }
+
+void TF_Tim2_Pwm_Input_Tim3 (void)
+{
+    // cnt for pwm output updates
+    unsigned char input_cnt = 0;
+    
+    // tim2 pwm input
+    TIM2_Init();
+
+    // tim3 pwm output
+    TIM3_Init();
+
+    while (1)
+    {
+        if (pwm_input_int)
+        {
+            pwm_input_int = 0;
+            input_cnt++;
+            if (SPEED_OUT)
+                SPEED_OUT_OFF;
+            else
+                SPEED_OUT_ON;
+            
+        }
+
+        if (input_cnt >= 10)
+        {
+            input_cnt = 0;
+            TIM3_Update_CH1(pwm_input_duty);
+        }
     }
 }
 

@@ -81,30 +81,36 @@ int main (void)
     AdcConfig();
     AdcStart();
 
-
+    // all channels to 0    
     Low_U_Reset();
     Low_V_Reset();
     Low_W_Reset();
     
-    // Timer Peripherals Activation
+    // Timer 1 for PWM outputs
     TIM1_Init();
 
     // all channels to 0
     Pwm_U(0);
     Pwm_V(0);
     Pwm_W(0); 
-    
-    // TIM_3_Init();
 
-    Pwm_Setting_Update_Reset ();
+    // Timer 3 for Current Setting
+    TIM3_Init();
+    TIM3_Update_CH1 (250);
+
+    // Timer 2 for speed setting input
+    TIM2_Init();
+    // Pwm_Setting_Update_Reset ();
     
     while (1)
     {
         Synchro ();
 
-        Led_Toggle_Update ();
+        // Led_Toggle_Update ();
 
         Hall_Update ();
+
+        Hall_Update_Supervisor ();
     }
 
 }
@@ -121,7 +127,7 @@ void TimingDelay_Decrement(void)
     if (timer_led)
         timer_led--;
 
-    // Hard_Timeouts ();
+    HARD_Timeouts ();
 
     Synchro_Timeouts ();
 

@@ -69,7 +69,7 @@
 //      CNFx 10 Alternate func Push Pull
 //      CNFx 11 Alternate func Open Drain
 //
-//      Pull-Up Pull-Dwn si el pin es Input el registro ODR coloca pull-up (1) o pull-dwn (0)
+//      Pull-Up Pull-Dwn si es Input(pullup/dwn) el registro ODR coloca pull-up (1) o pull-dwn (0)
 //      GPIOx->ODR 0xNNNN, 1 bit por pin
 //
 
@@ -92,35 +92,41 @@ void GpioInit (void)
     //     RCC_GPIOD_CLKEN;
 
     //--- GPIOA Low Side ------------------//
-    temp = GPIOA->CRL;    // PA1 PA2 PA3 inputs; PA6 analog input
-    temp &= 0xF0FFF000;
-    temp |= 0x00000444;
+    temp = GPIOA->CRL;    // PA1 in Alternative TIM2_CH1; PA6 out Alternative TIM3_CH1
+    temp &= 0xF0FFFF0F;
+    temp |= 0x0A000040;
     GPIOA->CRL = temp;
 
     //--- GPIOA High Side ------------------//
-    temp = GPIOA->CRH;    // PA8 PA9 PA10 Alterantive (TIM1_CH1, TIM1_CH2, TIM1_CH3)
-    temp &= 0xFFF0F000;   // PA12 input alternative
-    temp |= 0x00040AAA;
+    temp = GPIOA->CRH;    // PA8 PA9 PA10 out Alterantive (TIM1_CH1, TIM1_CH2, TIM1_CH3)
+    temp &= 0x0FF0F000;   // PA12 in Alternative TIM1_ETR; PA15 in (pullup/dwn)
+    temp |= 0x80040AAA;
     GPIOA->CRH = temp;
 
     //--- GPIOA Pull-Up Pull-Dwn ------------------//
-    // temp = GPIOA->ODR;    //PA0 pull-up PA3 pull-up
-    // temp &= 0x7FF6;    //PA15 pull-up
-    // temp |= 0x8009;
-    // GPIOA->ODR = temp;
+    temp = GPIOA->ODR;
+    temp &= 0x7FFF;    //PA15 pull-dwn
+    temp |= 0x0000;
+    GPIOA->ODR = temp;
     
     //--- GPIOB Low Side -------------------//
-    temp = GPIOB->CRL;    //PB5 PB6 PB7 outputs
-    temp &= 0x000FFFFF;
-    temp |= 0x22200000;
+    temp = GPIOB->CRL;    //PB0 - PB2 input(pullup/dwn) PB5 PB6 PB7 outputs
+    temp &= 0x000FF000;
+    temp |= 0x22200888;
     GPIOB->CRL = temp;
 
     //--- GPIOB High Side -------------------//
-    temp = GPIOB->CRH;    //PB8 output; PB9 input;
+    temp = GPIOB->CRH;    //PB8 output; PB9 input(pullup/dwn);
     temp &= 0xFFFFFF00;
-    temp |= 0x00000042;
+    temp |= 0x00000082;
     GPIOB->CRH = temp;    
     
+    //--- GPIOB Pull-Up Pull-Dwn ------------------//
+    temp = GPIOB->ODR;    //PB2 - PB0; PB9 pull-dwn
+    temp &= 0xFDF8;
+    temp |= 0x0000;
+    GPIOB->ODR = temp;
+
     //--- GPIOC Low Side -------------------//
     // temp = GPIOC->CRL;    //PC0-PC1 output; PC6-PC7 output
     // temp &= 0x00FFFF00;

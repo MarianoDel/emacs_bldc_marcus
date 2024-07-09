@@ -57,6 +57,7 @@ void TIM_1_OPM_us (unsigned short);
 void TIM2_Init (void);
 
 void TIM3_Init (void);
+void TIM3_Update_CH1 (unsigned short);
 void TIM3_Update_CH2 (unsigned short);
 void TIM3_Update_CH3 (unsigned short);
 void TIM3_Update_CH4 (unsigned short);

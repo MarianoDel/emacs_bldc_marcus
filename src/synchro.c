@@ -11,7 +11,7 @@
 #include "synchro.h"
 // #include "stm32f10x.h"
 #include "hard.h"
-// #include "tim.h"
+#include "tim.h"
 
 #include "pwm.h"
 
@@ -40,7 +40,8 @@ typedef enum {
     SYNC_INIT,
     SYNC_ACC,
     SYNC_RUNNING,
-    SYNC_BREAK,
+    SYNC_BRAKE,
+    SYNC_ALARM,    
     SYNC_WAIT_STOP,
     SYNC_STALL
         
@@ -82,6 +83,7 @@ void Synchro_Motor_Stop_Update (sequence_update_e new_seq);
 unsigned char Synchro_Motor_Stopped (void);
 sequence_update_e Synchro_State_Update (void);
 sequence_update_e Synchro_State_Update_Texas (void);
+void Synchro_Update_Current (void);
 
 
 // Module Functions ------------------------------------------------------------
@@ -178,9 +180,20 @@ void Synchro (void)
 #endif
         break;
 
-    case SYNC_BREAK:
+    case SYNC_BRAKE:
+        if (!Brake())
+        {
+            synchro_state = SYNC_RUNNING;
+        }
         break;
 
+    case SYNC_ALARM:
+        if (!Alarm_On())
+        {
+            synchro_state = SYNC_INIT;
+        }
+        break;
+        
     case SYNC_WAIT_STOP:
         if (!motor_timer)
         {
@@ -210,11 +223,46 @@ void Synchro (void)
     // seq_update = Synchro_State_Update ();
 
     seq_update = Synchro_State_Update_Texas ();
-
     Synchro_Motor_Stop_Update (seq_update);
 
     Pwm_Setting_Update ();
-    
+
+    // update current control online
+    Synchro_Update_Current();
+
+    // check for BRAKE
+    if (Brake())
+    {
+        if (synchro_state != SYNC_BRAKE)
+        {
+            synchro_state = SYNC_BRAKE;
+            generating = 0;
+            Pwm_U (0);
+            Pwm_V (0);
+            Pwm_W (0);
+            pwm_current_sended = 0;            
+            Low_U_Reset();
+            Low_V_Reset();
+            Low_W_Reset();
+        }
+    }
+
+    // check for ALARM
+    if (Alarm_On())
+    {
+        if (synchro_state != SYNC_ALARM)
+        {
+            synchro_state = SYNC_ALARM;
+            generating = 0;
+            Pwm_U (0);
+            Pwm_V (0);
+            Pwm_W (0);
+            pwm_current_sended = 0;            
+            Low_U_Set();
+            Low_V_Set();
+            Low_W_Set();
+        }
+    }
 }
 
 
@@ -538,5 +586,37 @@ void Sync_Stop_All (void)
     Low_U_Reset();
     Low_V_Reset();
     Low_W_Reset();
+}
+
+
+unsigned char current_setting_last = 0;
+void Synchro_Update_Current (void)
+{
+    unsigned char current_setting = 0;
+    current_setting = HARD_Check_Current_Config();
+
+    if (current_setting == current_setting_last)
+        return;
+
+    current_setting_last = current_setting;
+    switch (current_setting)
+    {
+    case 3:
+        TIM3_Update_CH1(1000);
+        break;
+
+    case 2:
+        TIM3_Update_CH1(750);
+        break;
+
+    case 1:
+        TIM3_Update_CH1(500);
+        break;
+
+    case 0:
+    default:
+        TIM3_Update_CH1(250);
+        break;
+    }
 }
 //--- end of file ---//

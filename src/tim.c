@@ -270,24 +270,24 @@ void TIM3_Init (void)
         RCC_TIM3_CLKEN;
 
     //Configuracion del timer.
-    TIM3->CR1 |= TIM_CR1_OPM;        //clk int / 1; upcounting; one pulse
-    //TIM3->CR1 = 0x0000;        //clk int / 1; upcounting;
-    //TIM3->CR2 |= TIM_CR2_MMS_1;        //UEV -> TRG0
+    TIM3->CR1 = 0x0000;        //clk int / 1; upcounting;
     TIM3->CR2 = 0x0000;
+
     //TIM3->SMCR |= TIM_SMCR_SMS_2 |TIM_SMCR_SMS_1 | TIM_SMCR_TS_1 | TIM_SMCR_TS_0;    //reset mode
     //TIM3->SMCR |= TIM_SMCR_SMS_2;    //reset mode link timer1    OJO no anda
-    TIM3->SMCR |= TIM_SMCR_SMS_2 | TIM_SMCR_SMS_1;    //trigger mode link timer1
-    //TIM3->SMCR = 0x0000;    //
-    //TIM3->CCMR1 = 0x6000;            //CH2 output PWM mode 1
-    //  TIM3->CCMR1 = 0x0060;            //CH1 output PWM mode 1
-    TIM3->CCMR1 = 0x0070;            //CH1 output PWM mode 2 (channel inactive TIM3->CNT < TIM3->CCR1)
-    TIM3->CCMR2 = 0x0000;            //
+    // TIM3->SMCR |= TIM_SMCR_SMS_2 | TIM_SMCR_SMS_1;    //trigger mode link timer1
+    TIM3->SMCR = 0x0000;
+    
+    TIM3->CCMR1 = 0x0060;    //CH1 output PWM mode 1 (channel active TIM3->CNT < TIM3->CCR1)
+    TIM3->CCMR2 = 0x0000;    //
+
     //  TIM3->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1P;    //CH1 enable on pin active high
     TIM3->CCER |= TIM_CCER_CC1E;    //CH1 enable on pin active high
     //TIM3->CCER |= TIM_CCER_CC2E | TIM_CCER_CC2P;    //CH2 enable on pin active high
-    TIM3->ARR = DUTY_50_PERCENT;
+
+    TIM3->ARR = 1000 - 1;
     TIM3->CNT = 0;
-    TIM3->PSC = 0;
+    TIM3->PSC = 64 - 1;    // 1us tick
     //TIM3->EGR = TIM_EGR_UG;    //generate event
 
     // Enable timer ver UDIS
@@ -295,7 +295,7 @@ void TIM3_Init (void)
     TIM3->CR1 |= TIM_CR1_CEN;
 
     //TIM3->CCR2 = 512;        //delay = TIM3->CCRx = 512 - TIM1->CCR2
-    TIM3->CCR1 = (DUTY_50_PERCENT + 1);        //delay = TIM3->CCRx = 512 - TIM1->CCR2
+    // TIM3->CCR1 = (DUTY_50_PERCENT + 1);        //delay = TIM3->CCRx = 512 - TIM1->CCR2
 }
 
 
