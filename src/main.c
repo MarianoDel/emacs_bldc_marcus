@@ -21,6 +21,7 @@
 
 #include "pwm.h"
 #include "synchro.h"
+#include "accel.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -100,7 +101,8 @@ int main (void)
 
     // Timer 2 for speed setting input
     TIM2_Init();
-    // Pwm_Setting_Update_Reset ();
+    Accel_Setting_Reset ();
+
     
     while (1)
     {
@@ -111,6 +113,8 @@ int main (void)
         Hall_Update ();
 
         Hall_Update_Supervisor ();
+
+        Accel_Setting_Update ();
     }
 
 }
@@ -132,6 +136,8 @@ void TimingDelay_Decrement(void)
     Synchro_Timeouts ();
 
     Pwm_Setting_Timeout ();
+
+    Accel_Setting_Timeout ();
 }
 
 

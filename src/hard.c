@@ -311,4 +311,13 @@ unsigned char Alarm_On (void)
 }
 
 
+unsigned char Direction (void)
+{
+    if (direction_cntr > 10)
+        return 1;
+
+    return 0;
+}
+
+
 //--- end of file ---//

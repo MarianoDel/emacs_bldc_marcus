@@ -82,6 +82,7 @@ SRC += ./src/hard.c
 SRC += ./src/synchro.c
 SRC += ./src/pwm.c
 SRC += ./src/dsp.c
+SRC += ./src/accel.c
 
 
 

@@ -12,7 +12,7 @@
 // #include "stm32f10x.h"
 #include "hard.h"
 #include "tim.h"
-
+#include "accel.h"
 #include "pwm.h"
 
 // #include "usart.h"
@@ -28,6 +28,9 @@
 
 
 // Module Private Types Constants & Macros -------------------------------------
+#define DIRECTION_FORWARD    0
+#define DIRECTION_BACKWARD    1
+
 typedef enum {
     SEQ_NO_UPDATE,
     SEQ_NEW_SYNC,
@@ -76,13 +79,15 @@ unsigned short pwm_current = 0;
 unsigned short pwm_step = 0;
 unsigned short pwm_current_sended = 0;
 unsigned char generating = 0;
+unsigned char direction_last = DIRECTION_FORWARD;
 
 // Module Private Functions ----------------------------------------------------
 void Sync_Stop_All (void);
 void Synchro_Motor_Stop_Update (sequence_update_e new_seq);
 unsigned char Synchro_Motor_Stopped (void);
 sequence_update_e Synchro_State_Update (void);
-sequence_update_e Synchro_State_Update_Texas (void);
+sequence_update_e Synchro_State_Update_Texas_Forward (void);
+sequence_update_e Synchro_State_Update_Texas_Backward (void);
 void Synchro_Update_Current (void);
 
 
@@ -108,16 +113,35 @@ void Synchro (void)
         if (Synchro_Check_Valid_State () &&
             Synchro_Motor_Stopped())
         {
-            if (Pwm_Setting () > PWM_MIN_START)
+            if (Accel_Get_Duty())
             {
-                // accelerate the motor over some time
-                motor_timer = MOTOR_ACCELERATION_TIMER_TT;
                 generating = 1;
                 pwm_current = 0;
-                synchro_state++;
-                
-                Led_Toggle(400);
+                synchro_state = SYNC_RUNNING;
             }
+            // if (Pwm_Setting () > PWM_MIN_START)
+            // {
+            //     // accelerate the motor over some time
+            //     motor_timer = MOTOR_ACCELERATION_TIMER_TT;
+            //     generating = 1;
+            //     pwm_current = 0;
+            //     synchro_state++;
+                
+            //     Led_Toggle(400);
+            // }
+        }
+
+        // only change direction with the motor stopped        
+        if (Direction() == DIRECTION_FORWARD)
+        {
+            if (direction_last != DIRECTION_FORWARD)
+                direction_last = DIRECTION_FORWARD;
+        }
+        else
+        {
+            if (direction_last != DIRECTION_BACKWARD)
+                direction_last = DIRECTION_BACKWARD;
+            
         }
         break;
         
@@ -149,15 +173,15 @@ void Synchro (void)
 
     case SYNC_RUNNING:
         
-        pwm_set = Pwm_Setting ();
+        pwm_set = Accel_Get_Duty ();
 
-        if (pwm_set < PWM_MIN_START)
+        if (!pwm_set)
         {
             generating = 0;
             Sync_Stop_All ();
             synchro_state = SYNC_WAIT_STOP;
             motor_timer = 400 * 6;
-            Led_Toggle (400);
+            // Led_Toggle (400);
         }
         else if (pwm_set != pwm_current)
         {
@@ -168,8 +192,29 @@ void Synchro (void)
                 pwm_current = pwm_set;
         }        
 
+        // pwm_set = Pwm_Setting ();
+
+        // if (pwm_set < PWM_MIN_START)
+        // {
+        //     generating = 0;
+        //     Sync_Stop_All ();
+        //     synchro_state = SYNC_WAIT_STOP;
+        //     motor_timer = 400 * 6;
+        //     Led_Toggle (400);
+        // }
+        // else if (pwm_set != pwm_current)
+        // {
+        //     // check limits before asingment
+        //     if (pwm_set > 2100)
+        //         pwm_current = 2100;
+        //     else
+        //         pwm_current = pwm_set;
+        // }        
+        
 #ifndef NO_MOTOR_STALL_CHECK
-        if (Synchro_Motor_Stopped())
+        // no motor move and more than 75% duty
+        if ((Synchro_Motor_Stopped()) &&
+            (pwm_set > 750))
         {
             generating = 0;
             Sync_Stop_All ();
@@ -204,14 +249,21 @@ void Synchro (void)
         
     case SYNC_STALL:
         // motor stalled, wait pwm_set be 0 to unstall
-
-        pwm_set = Pwm_Setting ();        
+        pwm_set = Accel_Get_Duty ();
         if ((!motor_timer) &&
-            (pwm_set < PWM_MIN_START))
+            (pwm_set))
         {
             synchro_state = SYNC_INIT;
-            Led_Toggle (0);
-        }        
+            // Led_Toggle (0);
+        }
+        
+        // pwm_set = Pwm_Setting ();        
+        // if ((!motor_timer) &&
+        //     (pwm_set < PWM_MIN_START))
+        // {
+        //     synchro_state = SYNC_INIT;
+        //     Led_Toggle (0);
+        // }        
         break;
 
     default:
@@ -222,10 +274,14 @@ void Synchro (void)
     // concurrent functions
     // seq_update = Synchro_State_Update ();
 
-    seq_update = Synchro_State_Update_Texas ();
+    if (direction_last == DIRECTION_FORWARD)
+        seq_update = Synchro_State_Update_Texas_Forward ();
+    else
+        seq_update = Synchro_State_Update_Texas_Backward ();
+
     Synchro_Motor_Stop_Update (seq_update);
 
-    Pwm_Setting_Update ();
+    // Pwm_Setting_Update ();
 
     // update current control online
     Synchro_Update_Current();
@@ -316,7 +372,7 @@ unsigned char Synchro_Motor_Stopped (void)
 #define HALL_CW_STAGE_6    0x05
 
 unsigned char last_hall = 0;
-sequence_update_e Synchro_State_Update_Texas (void)
+sequence_update_e Synchro_State_Update_Texas_Forward (void)
 {
     sequence_update_e seq = SEQ_NO_UPDATE;
     unsigned char current_hall = 0;
@@ -374,6 +430,81 @@ sequence_update_e Synchro_State_Update_Texas (void)
             Low_U_Set();            
             break;
         case HALL_CW_STAGE_6:
+            Pwm_V (pwm_current);
+            Low_U_Set();            
+            break;
+        }
+    }
+
+    return seq;
+}
+
+
+#define HALL_CCW_STAGE_1    0x06
+#define HALL_CCW_STAGE_2    0x04
+#define HALL_CCW_STAGE_3    0x05
+#define HALL_CCW_STAGE_4    0x01
+#define HALL_CCW_STAGE_5    0x03
+#define HALL_CCW_STAGE_6    0x02
+
+sequence_update_e Synchro_State_Update_Texas_Backward (void)
+{
+    sequence_update_e seq = SEQ_NO_UPDATE;
+    unsigned char current_hall = 0;
+
+    // first check change in hall effect
+    current_hall |= (Hall_W() << 0);
+    current_hall |= (Hall_V() << 1);
+    current_hall |= (Hall_U() << 2);
+
+    if (last_hall != current_hall)
+    {
+        last_hall = current_hall;
+        seq = SEQ_NEW_SYNC;
+        
+        // change in stage
+        if (generating)
+        {
+            Pwm_U (0);
+            Pwm_V (0);
+            Pwm_W (0);
+            pwm_current_sended = 0;
+            
+            Low_U_Reset();
+            Low_V_Reset();
+            Low_W_Reset();            
+        }
+    }
+
+    // check for change in pwm
+    if ((generating) &&
+        (pwm_current != pwm_current_sended))
+    {
+        pwm_current_sended = pwm_current;
+        
+        switch (last_hall)
+        {
+        case HALL_CCW_STAGE_1:
+            Pwm_V (pwm_current);
+            Low_W_Set();            
+            break;
+        case HALL_CCW_STAGE_2:
+            Pwm_U (pwm_current);
+            Low_W_Set();
+            break;
+        case HALL_CCW_STAGE_3:
+            Pwm_U (pwm_current);            
+            Low_V_Set();
+            break;
+        case HALL_CCW_STAGE_4:
+            Pwm_W (pwm_current);            
+            Low_V_Set();
+            break;
+        case HALL_CCW_STAGE_5:
+            Pwm_W (pwm_current);
+            Low_U_Set();            
+            break;
+        case HALL_CCW_STAGE_6:
             Pwm_V (pwm_current);
             Low_U_Set();            
             break;

@@ -179,6 +179,7 @@ unsigned char HARD_Check_Current_Config (void);
 
 unsigned char Brake (void);
 unsigned char Alarm_On (void);
+unsigned char Direction (void);
 
 
 #endif

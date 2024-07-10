@@ -31,9 +31,6 @@
 // Externals -------------------------------------------------------------------
 extern volatile unsigned char adc_int_seq_ready;
 extern volatile unsigned short adc_ch [];
-extern volatile unsigned short pwm_input_period;
-extern volatile unsigned short pwm_input_duty;
-extern volatile unsigned char pwm_input_int;
 
 
 
@@ -61,11 +58,11 @@ void TF_Hardware_Tests (void)
 
     // TF_Adc_Led_test1 ();
 
-    // Pb5_Pb6_Pb7_On_Off ();
+    Pb5_Pb6_Pb7_On_Off ();
 
     // TF_Tim2_Pwm_Input ();
 
-    TF_Tim2_Pwm_Input_Tim3 ();
+    // TF_Tim2_Pwm_Input_Tim3 ();
 }
 
 
@@ -181,58 +178,61 @@ void Pb5_Pb6_Pb7_On_Off (void)
 }
 
 
-void TF_Tim2_Pwm_Input (void)
-{
-    TIM2_Init();
+// extern volatile unsigned short pwm_input_period;
+// extern volatile unsigned short pwm_input_duty;
+// extern volatile unsigned char pwm_input_int;
+// void TF_Tim2_Pwm_Input (void)
+// {
+//     TIM2_Init();
 
-    while (1)
-    {
-        if (pwm_input_int < 2)
-        {
-            SPEED_OUT_ON;
-        }
-        else
-            SPEED_OUT_OFF;
+//     while (1)
+//     {
+//         if (pwm_input_int < 2)
+//         {
+//             SPEED_OUT_ON;
+//         }
+//         else
+//             SPEED_OUT_OFF;
 
-        // Wait_ms(1);
-        // LOW_U_ON;
-        // Wait_ms(1);
-        // LOW_U_OFF;
-    }
-}
+//         // Wait_ms(1);
+//         // LOW_U_ON;
+//         // Wait_ms(1);
+//         // LOW_U_OFF;
+//     }
+// }
 
 
-void TF_Tim2_Pwm_Input_Tim3 (void)
-{
-    // cnt for pwm output updates
-    unsigned char input_cnt = 0;
+// void TF_Tim2_Pwm_Input_Tim3 (void)
+// {
+//     // cnt for pwm output updates
+//     unsigned char input_cnt = 0;
     
-    // tim2 pwm input
-    TIM2_Init();
+//     // tim2 pwm input
+//     TIM2_Init();
 
-    // tim3 pwm output
-    TIM3_Init();
+//     // tim3 pwm output
+//     TIM3_Init();
 
-    while (1)
-    {
-        if (pwm_input_int)
-        {
-            pwm_input_int = 0;
-            input_cnt++;
-            if (SPEED_OUT)
-                SPEED_OUT_OFF;
-            else
-                SPEED_OUT_ON;
+//     while (1)
+//     {
+//         if (pwm_input_int)
+//         {
+//             pwm_input_int = 0;
+//             input_cnt++;
+//             if (SPEED_OUT)
+//                 SPEED_OUT_OFF;
+//             else
+//                 SPEED_OUT_ON;
             
-        }
+//         }
 
-        if (input_cnt >= 10)
-        {
-            input_cnt = 0;
-            TIM3_Update_CH1(pwm_input_duty);
-        }
-    }
-}
+//         if (input_cnt >= 10)
+//         {
+//             input_cnt = 0;
+//             TIM3_Update_CH1(pwm_input_duty);
+//         }
+//     }
+// }
 
 
 //--- end of file ---//

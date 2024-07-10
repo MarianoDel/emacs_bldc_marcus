@@ -12,6 +12,7 @@
 #include "tim.h"
 #include "stm32f10x.h"
 #include "hard.h"
+#include "accel.h"
 
 
 // Module Private Types Constants and Macros -----------------------------------
@@ -51,9 +52,9 @@ extern volatile unsigned short wait_ms_var;
 
 
 // Globals ---------------------------------------------------------------------
-volatile unsigned short pwm_input_period = 0;
-volatile unsigned short pwm_input_duty = 0;
-volatile unsigned char pwm_input_int = 0;
+// volatile unsigned short pwm_input_period = 0;
+// volatile unsigned short pwm_input_duty = 0;
+// volatile unsigned char pwm_input_int = 0;
 
 
 // Module Functions ------------------------------------------------------------
@@ -248,14 +249,15 @@ void TIM2_IRQHandler (void)
     // low flag
     if (TIM2->SR & TIM_SR_CC2IF)
     {
-        pwm_input_period = TIM2->CCR2;
-        pwm_input_duty = TIM2->CCR1;
+        // pwm_input_period = TIM2->CCR2;
+        // pwm_input_duty = TIM2->CCR1;
+        Accel_Set_Values (TIM2->CCR2, TIM2->CCR1);
     }
 
-    if (pwm_input_int < 4)
-        pwm_input_int++;
-    else
-        pwm_input_int = 0;
+    // if (pwm_input_int < 4)
+    //     pwm_input_int++;
+    // else
+    //     pwm_input_int = 0;
     
     TIM2->SR = 0x00;
 }
