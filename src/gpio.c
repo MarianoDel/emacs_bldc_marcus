@@ -110,20 +110,20 @@ void GpioInit (void)
     GPIOA->ODR = temp;
     
     //--- GPIOB Low Side -------------------//
-    temp = GPIOB->CRL;    //PB0 - PB2 input(pullup/dwn) PB5 PB6 PB7 outputs
-    temp &= 0x000FF000;
-    temp |= 0x22200888;
+    temp = GPIOB->CRL;    //PB0 - PB2 input(pullup/dwn); PB3 input pulldwn
+    temp &= 0x00000000;    //PB4 input pulldwn; PB5 PB6 PB7 outputs
+    temp |= 0x22288888;
     GPIOB->CRL = temp;
 
     //--- GPIOB High Side -------------------//
     temp = GPIOB->CRH;    //PB8 output; PB9 input(pullup/dwn);
-    temp &= 0xFFFFFF00;
-    temp |= 0x00000082;
+    temp &= 0xF0FFFF00;    // PB14 input (pulldwn)
+    temp |= 0x08000082;
     GPIOB->CRH = temp;    
     
     //--- GPIOB Pull-Up Pull-Dwn ------------------//
-    temp = GPIOB->ODR;    //PB2 - PB0; PB9 pull-dwn
-    temp &= 0xFDF8;
+    temp = GPIOB->ODR;    //PB2 - PB0; PB3 pull-dwn PB4 pull-dwn
+    temp &= 0xBDE0;    // PB9 pull-dwn PB14 pull-dwn
     temp |= 0x0000;
     GPIOB->ODR = temp;
 
@@ -145,6 +145,15 @@ void GpioInit (void)
     // temp |= 0x00000A00;
     // GPIOD->CRL = temp;
 
+    // AF remap pin functions
+    if (!RCC_AFIO_CLK)
+        RCC_AFIO_CLKEN;
+
+    // remap PB4 PB3
+    temp = AFIO->MAPR;
+    temp |= AFIO_MAPR_SWJ_CFG_1;
+    AFIO->MAPR = temp;
+    
 #ifdef USE_EXTERNAL_INTS
     //Interrupt en PA4 y PA5
     if (!RCC_AFIO_CLK)

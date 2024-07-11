@@ -62,7 +62,7 @@ int main (void)
         SysTickError();
 
     // Hardware Tests Functions
-    TF_Hardware_Tests ();
+    // TF_Hardware_Tests ();
     // End of Hardware Tests Functions
 
     // Hardware Setup
@@ -74,13 +74,13 @@ int main (void)
         Wait_ms(250);
     }
     
-    //-- DMA configuration and Init
-    DMAConfig ();
-    DMA_ENABLE;
+    // //-- DMA configuration and Init
+    // DMAConfig ();
+    // DMA_ENABLE;
 
-    //-- ADC Init
-    AdcConfig();
-    AdcStart();
+    // //-- ADC Init
+    // AdcConfig();
+    // AdcStart();
 
     // all channels to 0    
     Low_U_Reset();
@@ -135,7 +135,7 @@ void TimingDelay_Decrement(void)
 
     Synchro_Timeouts ();
 
-    Pwm_Setting_Timeout ();
+    // Pwm_Setting_Timeout ();
 
     Accel_Setting_Timeout ();
 }

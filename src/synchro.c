@@ -92,7 +92,7 @@ void Synchro_Update_Current (void);
 
 
 // Module Functions ------------------------------------------------------------
-void Synchro_Timeouts (void)
+void Synchro_Timeouts (void)    // 1ms tick
 {
     if (motor_stop_timer)
         motor_stop_timer--;
@@ -180,13 +180,14 @@ void Synchro (void)
             generating = 0;
             Sync_Stop_All ();
             synchro_state = SYNC_WAIT_STOP;
-            motor_timer = 400 * 6;
+            // motor_timer = 400 * 6;
+            motor_timer = 400;            
             // Led_Toggle (400);
         }
         else if (pwm_set != pwm_current)
         {
             // check limits before asingment
-            if (pwm_set > 2100)
+            if (pwm_set > 2100)    // 95% 2280
                 pwm_current = 2100;
             else
                 pwm_current = pwm_set;
