@@ -92,59 +92,108 @@ void Hall_Update (void)
 }
 
 
-unsigned char hall_fail_last = 0;
 unsigned char hall_u_last = 0;
 unsigned char hall_v_last = 0;
 unsigned char hall_w_last = 0;
-unsigned char hall_u_changes_cnt = 0;
-unsigned char hall_v_changes_cnt = 0;
-unsigned char hall_w_changes_cnt = 0;
+unsigned char hall_rising_check_u = 0;
+unsigned char hall_rising_check_v = 0;
+unsigned char hall_rising_check_w = 0;
 void Hall_Update_Supervisor (void)
 {
-    unsigned char hall_fail = 0;
     unsigned char hall_u_new = 0;
     unsigned char hall_v_new = 0;
     unsigned char hall_w_new = 0;
 
     hall_u_new = Hall_U();
     hall_v_new = Hall_V();
-    hall_w_new = Hall_W();    
-    
+    hall_w_new = Hall_W();
+
+    // send speed on u phase
+    if (hall_u_new)
+        SPEED_OUT_ON;
+    else
+        SPEED_OUT_OFF;
+
+    // check rising edge on U
     if (hall_u_last != hall_u_new)
     {
+        if ((!hall_u_last) &&
+            (hall_u_new))
+        {
+            hall_rising_check_u |= 0x01;
+            hall_rising_check_v |= 0x01;
+            hall_rising_check_w |= 0x01;
+            
+            // have rising edge on others?
+            if (hall_rising_check_u == 0x07)
+                HALL_FAIL_OFF;
+            else
+                HALL_FAIL_ON;
+
+            hall_rising_check_u = 0;
+        }
         hall_u_last = hall_u_new;
-        hall_u_changes_cnt++;
     }
 
+    // check rising edge on V
     if (hall_v_last != hall_v_new)
     {
+        if ((!hall_v_last) &&
+            (hall_v_new))
+        {
+            hall_rising_check_u |= 0x02;
+            hall_rising_check_v |= 0x02;
+            hall_rising_check_w |= 0x02;
+            
+            // have rising edge on others?
+            if (hall_rising_check_v == 0x07)
+                HALL_FAIL_OFF;
+            else
+                HALL_FAIL_ON;
+
+            hall_rising_check_v = 0;
+        }
         hall_v_last = hall_v_new;
-        hall_v_changes_cnt++;
     }
 
+    // check rising edge on W
     if (hall_w_last != hall_w_new)
     {
+        if ((!hall_w_last) &&
+            (hall_w_new))
+        {
+            hall_rising_check_u |= 0x04;
+            hall_rising_check_v |= 0x04;
+            hall_rising_check_w |= 0x04;
+            
+            // have rising edge on others?
+            if (hall_rising_check_w == 0x07)
+                HALL_FAIL_OFF;
+            else
+                HALL_FAIL_ON;
+
+            hall_rising_check_w = 0;
+        }
         hall_w_last = hall_w_new;
-        hall_w_changes_cnt++;
-    }
-    
-    if (Circular_Diff (hall_u_changes_cnt, hall_v_changes_cnt) > 10)
-        hall_fail = 1;
-
-    if (Circular_Diff (hall_v_changes_cnt, hall_w_changes_cnt) > 10)
-        hall_fail = 1;
-
-    if (hall_fail_last != hall_fail)
-    {
-        hall_fail_last = hall_fail;
-
-        if (hall_fail)
-            HALL_FAIL_ON;
-        else
-            HALL_FAIL_OFF;
     }
 }
 
+
+unsigned char Hall_Check_Invalid (void)
+{
+    unsigned char hall_sum = 0;    
+
+    // check for invalid state
+    hall_sum = Hall_U() + Hall_V() + Hall_W();
+    
+    if ((hall_sum == 0) ||
+        (hall_sum == 3))
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 unsigned char Circular_Diff (unsigned char a, unsigned char b)
 {

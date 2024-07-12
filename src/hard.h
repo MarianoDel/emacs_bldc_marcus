@@ -167,6 +167,7 @@ void Pb7_Off (void);
 
 void Hall_Update (void);
 void Hall_Update_Supervisor (void);
+unsigned char Hall_Check_Invalid (void);
 unsigned char Hall_U (void);
 unsigned char Hall_V (void);
 unsigned char Hall_W (void);

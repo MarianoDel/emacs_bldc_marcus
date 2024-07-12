@@ -187,8 +187,9 @@ void Synchro (void)
         else if (pwm_set != pwm_current)
         {
             // check limits before asingment
-            if (pwm_set > 2100)    // 95% 2280
-                pwm_current = 2100;
+            // if (pwm_set > 2100)    // 95% 2280
+            if (pwm_set > 3040)    // 95% of 3200             
+                pwm_current = 3040;
             else
                 pwm_current = pwm_set;
         }        
@@ -229,6 +230,7 @@ void Synchro (void)
     case SYNC_BRAKE:
         if (!Brake())
         {
+            generating = 1;
             synchro_state = SYNC_RUNNING;
         }
         break;
@@ -325,24 +327,33 @@ void Synchro (void)
 
 unsigned char Synchro_Check_Valid_State (void)
 {
-    if ((!Hall_U()) &&
-        (!Hall_V()) &&
-        (!Hall_W()))
-        return 0;
-
-    if ((Hall_U()) &&
-        (Hall_V()) &&
-        (Hall_W()))
+    if (Hall_Check_Invalid())
         return 0;
 
     return 1;
-
-    // another with seq
-    // if (seq_last_update == SEQ_OUT_OF_SYNC)
-    //     return 0;
-
-    // return 1;
 }
+
+
+// unsigned char Synchro_Check_Valid_State (void)
+// {
+//     if ((!Hall_U()) &&
+//         (!Hall_V()) &&
+//         (!Hall_W()))
+//         return 0;
+
+//     if ((Hall_U()) &&
+//         (Hall_V()) &&
+//         (Hall_W()))
+//         return 0;
+
+//     return 1;
+
+//     // another with seq
+//     // if (seq_last_update == SEQ_OUT_OF_SYNC)
+//     //     return 0;
+
+//     // return 1;
+// }
 
 
 sequence_update_e seq_last_update = SEQ_NO_UPDATE;

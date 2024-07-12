@@ -128,7 +128,7 @@ void TIM1_Init (void)    //for pwm
     TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E;        
     TIM1->BDTR |= TIM_BDTR_MOE;    
 
-    TIM1->ARR = 2400 - 1;    //48MHz / 2400 = 20KHz
+    TIM1->ARR = 3200 - 1;    //64MHz / 3200 = 20KHz
 
     TIM1->CNT = 0;
 

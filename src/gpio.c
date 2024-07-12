@@ -92,9 +92,9 @@ void GpioInit (void)
     //     RCC_GPIOD_CLKEN;
 
     //--- GPIOA Low Side ------------------//
-    temp = GPIOA->CRL;    // PA1 in Alternative TIM2_CH1; PA6 out Alternative TIM3_CH1
-    temp &= 0xF0FFFF0F;
-    temp |= 0x0A000040;
+    temp = GPIOA->CRL;    // PA1 Alternative input pullup TIM2_CH1; PA2 output
+    temp &= 0xF0FFF00F;    // PA6 out Alternative TIM3_CH1
+    temp |= 0x0A000280;
     GPIOA->CRL = temp;
 
     //--- GPIOA High Side ------------------//
@@ -105,8 +105,8 @@ void GpioInit (void)
 
     //--- GPIOA Pull-Up Pull-Dwn ------------------//
     temp = GPIOA->ODR;
-    temp &= 0x7FFF;    //PA15 pull-dwn
-    temp |= 0x0000;
+    temp &= 0x7FFD;    // PA1 pull-up PA15 pull-dwn
+    temp |= 0x0002;
     GPIOA->ODR = temp;
     
     //--- GPIOB Low Side -------------------//
@@ -122,9 +122,9 @@ void GpioInit (void)
     GPIOB->CRH = temp;    
     
     //--- GPIOB Pull-Up Pull-Dwn ------------------//
-    temp = GPIOB->ODR;    //PB2 - PB0; PB3 pull-dwn PB4 pull-dwn
+    temp = GPIOB->ODR;    //PB2 - PB0 pull-up; PB3 pull-dwn PB4 pull-dwn
     temp &= 0xBDE0;    // PB9 pull-dwn PB14 pull-dwn
-    temp |= 0x0000;
+    temp |= 0x0007;
     GPIOB->ODR = temp;
 
     //--- GPIOC Low Side -------------------//
