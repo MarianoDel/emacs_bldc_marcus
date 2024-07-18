@@ -5,20 +5,15 @@
 // ## @Editor: Emacs - ggtags
 // ## @TAGS:   Global
 // ##
-// #### PWM.C ##############################################
+// #### ACCEL.C ############################################
 //----------------------------------------------------------
 
 // Includes --------------------------------------------------------------------
 #include "accel.h"
-// #include "hard.h"
-// #include "stm32f10x.h"
-// #include "tim.h"
 #include "dsp.h"
-// #include "adc.h"
 
 
 // Module Private Types & Macros -----------------------------------------------
-// #define SOFT_PWM_STEPS    256
 
 
 // Externals -------------------------------------------------------------------
@@ -30,8 +25,6 @@ unsigned short accel_duty_filtered = 0;
 volatile unsigned short accel_input_timeout = 0;
 volatile unsigned short accel_input_filter_timer = 0;
 volatile unsigned short accel_duty = 0;
-volatile unsigned short accel_period = 0;
-
 
 
 // Module Private Functions ----------------------------------------------------
@@ -53,7 +46,12 @@ void Accel_Setting_Update (void)
     if (!accel_input_filter_timer)
     {
         accel_input_filter_timer = 5;
-        accel_duty_filtered = MA16_U16Circular (&input_filter, accel_duty);
+
+        // if we are getting values, use it, else input will be 0
+        if (accel_input_timeout)
+            accel_duty_filtered = MA16_U16Circular (&input_filter, accel_duty);
+        else
+            accel_duty_filtered = MA16_U16Circular (&input_filter, 0);
     }
 }
 
@@ -66,20 +64,27 @@ void Accel_Setting_Reset (void)
 
 unsigned short Accel_Get_Duty (void)
 {
-    if (!accel_input_timeout)
-        return 0;
-
-    if (accel_duty_filtered < ACCEL_MIN_FOR_START)    // 10% min
+    if (accel_duty_filtered < ACCEL_MIN_FOR_START)    // 5% min
         return 0;
     
-    return accel_duty_filtered - ACCEL_MIN_FOR_START;
+    return accel_duty_filtered - ACCEL_MIN_FOR_START;    // 95% max
 }
 
 
 void Accel_Set_Values (unsigned short period, unsigned short duty)
 {
-    accel_period = period;
-    accel_duty = duty;
+    unsigned int calc = 0;
+
+    if (period)
+    {
+        calc = duty * 1000;
+        calc = calc / period;
+    }
+    else
+        calc = 0;
+    
+    // accel_period = period;
+    accel_duty = (unsigned short) calc;
 
     accel_input_timeout = 500;    // 500ms reload
     

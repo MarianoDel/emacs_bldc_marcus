@@ -14,7 +14,7 @@
 
 
 // Exported Types Constants and Macros -----------------------------------------
-#define ACCEL_MIN_FOR_START    320
+#define ACCEL_MIN_FOR_START    50
 
 
 // Exported Functions ----------------------------------------------------------

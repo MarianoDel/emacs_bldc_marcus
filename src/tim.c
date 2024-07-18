@@ -128,13 +128,13 @@ void TIM1_Init (void)    //for pwm
     TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E;        
     TIM1->BDTR |= TIM_BDTR_MOE;    
 
-    TIM1->ARR = 3200 - 1;    //64MHz / 3200 = 20KHz
-
+    TIM1->ARR = 1000 - 1;    // 16MHz / 1000 = 16KHz
+    TIM1->PSC = 4 - 1;    // 64MHz / 4 = 16MHz
     TIM1->CNT = 0;
 
     TIM1->CR1 |= TIM_CR1_CEN;
-
 }
+
 
 void TIM1_Update_CH1 (unsigned short a)
 {

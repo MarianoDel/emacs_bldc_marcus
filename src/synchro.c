@@ -239,6 +239,9 @@ void Synchro (void)
         if (!Alarm_On())
         {
             synchro_state = SYNC_INIT;
+            Low_U_Reset();
+            Low_V_Reset();
+            Low_W_Reset();
         }
         break;
         
