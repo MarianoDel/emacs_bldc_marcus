@@ -97,7 +97,8 @@ int main (void)
 
     // Timer 3 for Current Setting
     TIM3_Init();
-    TIM3_Update_CH1 (250);
+    TIM3_Update_CH1 (250);    // starts on 1/4
+    // TIM3_Update_CH1 (1000);    // starts on max 
 
     // Timer 2 for speed setting input
     TIM2_Init();

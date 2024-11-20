@@ -113,12 +113,6 @@ void Synchro (void)
         if (Synchro_Check_Valid_State () &&
             Synchro_Motor_Stopped())
         {
-            if (Accel_Get_Duty())
-            {
-                generating = 1;
-                pwm_current = 0;
-                synchro_state = SYNC_RUNNING;
-            }
             // if (Pwm_Setting () > PWM_MIN_START)
             // {
             //     // accelerate the motor over some time
@@ -129,19 +123,28 @@ void Synchro (void)
                 
             //     Led_Toggle(400);
             // }
+
+            // only change direction with the motor stopped        
+            if (Direction() == DIRECTION_FORWARD)
+            {
+                if (direction_last != DIRECTION_FORWARD)
+                    direction_last = DIRECTION_FORWARD;
+            }
+            else
+            {
+                if (direction_last != DIRECTION_BACKWARD)
+                    direction_last = DIRECTION_BACKWARD;
+            
+            }
+            
         }
 
-        // only change direction with the motor stopped        
-        if (Direction() == DIRECTION_FORWARD)
+        // if accel on go to running
+        if (Accel_Get_Duty())
         {
-            if (direction_last != DIRECTION_FORWARD)
-                direction_last = DIRECTION_FORWARD;
-        }
-        else
-        {
-            if (direction_last != DIRECTION_BACKWARD)
-                direction_last = DIRECTION_BACKWARD;
-            
+            generating = 1;
+            pwm_current = 0;
+            synchro_state = SYNC_RUNNING;
         }
         break;
         
@@ -175,7 +178,29 @@ void Synchro (void)
         
         pwm_set = Accel_Get_Duty ();
 
-        if (!pwm_set)
+        // 20-11 original salgo sin acelerador
+        // if (!pwm_set)
+        // {
+        //     generating = 0;
+        //     Sync_Stop_All ();
+        //     synchro_state = SYNC_WAIT_STOP;
+        //     // motor_timer = 400 * 6;
+        //     motor_timer = 400;            
+        //     // Led_Toggle (400);
+        // }
+        // else if (pwm_set != pwm_current)
+        // {
+        //     // check limits before asingment
+        //     // if (pwm_set > 2100)    // 95% 2280
+        //     if (pwm_set > 3040)    // 95% of 3200             
+        //         pwm_current = 3040;
+        //     else
+        //         pwm_current = pwm_set;
+        // }        
+
+        // pruebas 20-11
+        if ((!pwm_set) &&
+            (Synchro_Motor_Stopped()))
         {
             generating = 0;
             Sync_Stop_All ();
@@ -193,7 +218,7 @@ void Synchro (void)
             else
                 pwm_current = pwm_set;
         }        
-
+        
         // pwm_set = Pwm_Setting ();
 
         // if (pwm_set < PWM_MIN_START)
