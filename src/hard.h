@@ -75,7 +75,8 @@ typedef enum {
 
 
 // Gpios Configuration ---------------------------------------------------------
-#ifdef HARDWARE_VERSION_1_0
+#if (defined HARDWARE_VERSION_2_0) || (defined HARDWARE_VERSION_1_0)
+
 
 //--- Port A ---//
 // PA1 input Alternative TIM2_CH2
@@ -88,14 +89,24 @@ typedef enum {
 
 // PA3
 // PA4
+#define LED    ((GPIOA->ODR & 0x0010) != 0)
+#define LED_ON    (GPIOA->BSRR = 0x00000010)
+#define LED_OFF    (GPIOA->BSRR = 0x00100000)
+
 // PA5    NC
 
 // PA6 CURRENT_CTRL output Alternative TIM3_CH1
 
-// PA7
+// PA7    NC
 
 // PA8 PA9 PA10 Alternative (TIM1_CH1, TIM1_CH2, TIM1_CH3)
+
+// PA11    NC
+
 // PA12 input alternative TIM1_ETR
+
+// PA13    NC
+// PA14    NC jtag
 
 // PA15 input
 #define BRAKE    ((GPIOA->IDR & 0x8000) != 0)
@@ -140,23 +151,27 @@ typedef enum {
 #define DIRECTION    ((GPIOB->IDR & 0x0200) != 0)
 
 // PB10
-// PB11 NC
+// PB11
+// PB12
+// PB13 NC
 
 // PB14 input
 #define ALARMA_ON    ((GPIOB->IDR & 0x4000) != 0)
 
 
 //--- Port C ---//
-//PC13
-#define LED    ((GPIOC->ODR & 0x2000) == 0)
-#define LED_OFF    (GPIOC->BSRR = 0x00002000)
-#define LED_ON    (GPIOC->BSRR = 0x20000000)
+// PC13
+// PC14
+// PC15 NC
 
-
-#endif //HARDWARE_VERSION_1_0
+#endif // HARDWARE_VERSION_2_0 or HARDWARE_VERSION_1_0
 
 
 // Module Exported Functions ---------------------------------------------------
+unsigned char Led_Is_On (void);
+void Led_On (void);
+void Led_Off (void);
+
 void Pb5_On (void);
 void Pb6_On (void);
 void Pb7_On (void);

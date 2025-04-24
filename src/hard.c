@@ -23,40 +23,22 @@ unsigned char Circular_Diff (unsigned char a, unsigned char b);
 
 
 // Module Functions ------------------------------------------------------------
-// void Pb5_On (void)
-// {
-//     // PB5_ON;
-// }
+unsigned char Led_Is_On (void)
+{
+    return LED;
+}
 
 
-// void Pb6_On (void)
-// {
-//     // PB6_ON;
-// }
+void Led_On (void)
+{
+    LED_ON;
+}
 
 
-// void Pb7_On (void)
-// {
-//     // PB7_ON;
-// }
-
-
-// void Pb5_Off (void)
-// {
-//     // PB5_OFF;
-// }
-
-
-// void Pb6_Off (void)
-// {
-//     // PB6_OFF;
-// }
-
-
-// void Pb7_Off (void)
-// {
-//     // PB7_OFF;
-// }
+void Led_Off (void)
+{
+    LED_OFF;
+}
 
 
 unsigned char hall_u_cnt = 0;

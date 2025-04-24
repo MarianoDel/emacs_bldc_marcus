@@ -219,17 +219,26 @@ void TIM2_Init (void)
 
     // pwm input mode (input on CH2), pwm freq on CH2, duty on CH1
     TIM2->SMCR = TIM_SMCR_SMS_2 | TIM_SMCR_TS_2 | TIM_SMCR_TS_1;    //reset mode on TI2FP2 trigger
-
+    
     TIM2->CCMR1 = TIM_CCMR1_CC2S_0 | TIM_CCMR1_CC1S_1;    //CH2 input TI2, CH1 input on TI2FP1
     TIM2->CCMR1 |= TIM_CCMR1_IC2F_3 | TIM_CCMR1_IC2F_2 | TIM_CCMR1_IC2F_1 | TIM_CCMR1_IC2F_0;    // filtered
+    TIM2->CCMR2 |= 0x0070;    // ch3 pwm mode2
+    // TIM2->CCMR2 |= 0x0010;    // ch3 active on match
+    // TIM2->CCMR2 = 0x0000;    //     
+    
     TIM2->CCER = TIM_CCER_CC2E | TIM_CCER_CC1E | TIM_CCER_CC1P;    //CH2 CH1 enable capture, CH1 on falling
+    // TIM2->CCER = TIM_CCER_CC3E;    //CH3 output
     
     TIM2->ARR = 0xFFFF;    // tops 16bits (65ms on 1MHz) (1.36ms on 48MHz)
     TIM2->CNT = 0;
     TIM2->PSC = 64 - 1;    // 1us counter
 
+    TIM2->CCR3 = 5000;    // 200Hz min pwm input
+
     // Enable timer
-    TIM2->DIER |= TIM_DIER_CC2IE;    // int on CH2 capture
+    TIM2->DIER |= TIM_DIER_CC2IE | TIM_DIER_CC3IE;    // int on CH2 capture, int on CH3 capture (for min pwm)
+    // TIM2->DIER |= TIM_DIER_CC3IE;    // int on CH2 capture, int on CH3 capture (for min pwm)
+    // TIM2->DIER |= TIM_DIER_CC2IE;    // int on CH2 capture, int on CH3 capture (for min pwm)    
     // TIM2->DIER |= TIM_DIER_UIE;    // int on update
     TIM2->CR1 |= TIM_CR1_CEN;
 
@@ -252,6 +261,18 @@ void TIM2_IRQHandler (void)
         // pwm_input_period = TIM2->CCR2;
         // pwm_input_duty = TIM2->CCR1;
         Accel_Set_Values (TIM2->CCR2, TIM2->CCR1);
+    }
+    else if (TIM2->SR & TIM_SR_CC3IF)
+    {
+	TIM2->SR = 0x00;
+	// TIM2->CNT = 0;
+	TIM2->EGR |= TIM_EGR_UG;
+        Accel_Set_Values (0, 0);
+
+	if (Led_Is_On())
+	    Led_Off();
+	else
+	    Led_On();
     }
 
     // if (pwm_input_int < 4)

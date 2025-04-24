@@ -22,7 +22,6 @@
 // Globals ---------------------------------------------------------------------
 ma16_u16_data_obj_t input_filter;
 unsigned short accel_duty_filtered = 0;
-volatile unsigned short accel_input_timeout = 0;
 volatile unsigned short accel_input_filter_timer = 0;
 volatile unsigned short accel_duty = 0;
 
@@ -33,9 +32,6 @@ volatile unsigned short accel_duty = 0;
 // Module Functions ------------------------------------------------------------
 void Accel_Setting_Timeout (void)
 {
-    if (accel_input_timeout)
-        accel_input_timeout--;
-
     if (accel_input_filter_timer)
         accel_input_filter_timer--;
 }
@@ -47,11 +43,7 @@ void Accel_Setting_Update (void)
     {
         accel_input_filter_timer = 5;
 
-        // if we are getting values, use it, else input will be 0
-        if (accel_input_timeout)
-            accel_duty_filtered = MA16_U16Circular (&input_filter, accel_duty);
-        else
-            accel_duty_filtered = MA16_U16Circular (&input_filter, 0);
+	accel_duty_filtered = MA16_U16Circular (&input_filter, accel_duty);
     }
 }
 
@@ -85,8 +77,6 @@ void Accel_Set_Values (unsigned short period, unsigned short duty)
     
     // accel_period = period;
     accel_duty = (unsigned short) calc;
-
-    accel_input_timeout = 500;    // 500ms reload
     
 }
 //--- end of file ---//

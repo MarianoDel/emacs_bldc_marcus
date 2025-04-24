@@ -85,16 +85,18 @@ void GpioInit (void)
     if (!RCC_GPIOB_CLK)
         RCC_GPIOB_CLKEN;
 
-    if (!RCC_GPIOC_CLK)
-        RCC_GPIOC_CLKEN;
+    // if (!RCC_GPIOC_CLK)
+    //     RCC_GPIOC_CLKEN;
 
     // if (!RCC_GPIOD_CLK)
     //     RCC_GPIOD_CLKEN;
 
     //--- GPIOA Low Side ------------------//
     temp = GPIOA->CRL;    // PA1 Alternative input pullup TIM2_CH1; PA2 output
-    temp &= 0xF0FFF00F;    // PA6 out Alternative TIM3_CH1
-    temp |= 0x0A000280;
+    temp &= 0xF0F0F00F;    //PA4 output On Board LED PA6 out Alternative TIM3_CH1
+    temp |= 0x0A020280;
+    // temp &= 0xF0F0F00F;    //PA2 to alternative TIM2_CH3
+    // temp |= 0x0A020A80;
     GPIOA->CRL = temp;
 
     //--- GPIOA High Side ------------------//
@@ -106,7 +108,7 @@ void GpioInit (void)
     //--- GPIOA Pull-Up Pull-Dwn ------------------//
     temp = GPIOA->ODR;
     temp &= 0x7FFD;    // PA1 pull-up PA15 pull-dwn
-    temp |= 0x0000;
+    temp |= 0x0002;
     GPIOA->ODR = temp;
     
     //--- GPIOB Low Side -------------------//
@@ -134,10 +136,10 @@ void GpioInit (void)
     // GPIOC->CRL = temp;
 
     //--- GPIOC High Side -------------------//    
-    temp = GPIOC->CRH;    
-    temp &= 0xFF0FFFFF;    //PC13 output On Board LED
-    temp |= 0x00200000;
-    GPIOC->CRH = temp;
+    // temp = GPIOC->CRH;    
+    // temp &= 0xFF0FFFFF;    //PC13 output On Board LED
+    // temp |= 0x00200000;
+    // GPIOC->CRH = temp;
 
     //--- GPIOD Low Side -------------------//
     // temp = GPIOD->CRL;    //PD2 Alterantive (Uart5)
