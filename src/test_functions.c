@@ -18,6 +18,7 @@
 #include "dma.h"
 #include "tim.h"
 #include "spi.h"
+#include "pwm.h"
 
 #include <stdio.h>
 #include <string.h>

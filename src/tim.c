@@ -269,10 +269,10 @@ void TIM2_IRQHandler (void)
 	TIM2->EGR |= TIM_EGR_UG;
         Accel_Set_Values (0, 0);
 
-	if (Led_Is_On())
-	    Led_Off();
-	else
-	    Led_On();
+	// if (Led_Is_On())
+	//     Led_Off();
+	// else
+	//     Led_On();
     }
 
     // if (pwm_input_int < 4)

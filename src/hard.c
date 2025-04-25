@@ -12,6 +12,10 @@
 #include "stm32f10x.h"
 
 
+// Module Private Types Constants and Macros -----------------------------------
+#define HALL_FAIL_CNT_ROOF    15
+#define HALL_FAIL_CNT_THRESHOLD    10
+
 // Externals -------------------------------------------------------------------
 
 
@@ -20,6 +24,7 @@
 
 // Module Private Functions ----------------------------------------------------
 unsigned char Circular_Diff (unsigned char a, unsigned char b);
+void Led_Out_Rising_Edge (void);
 
 
 // Module Functions ------------------------------------------------------------
@@ -80,6 +85,114 @@ unsigned char hall_w_last = 0;
 unsigned char hall_rising_check_u = 0;
 unsigned char hall_rising_check_v = 0;
 unsigned char hall_rising_check_w = 0;
+unsigned char hall_fail_cnt = 0;
+void Hall_Update_Supervisor_With_Counter (void)
+{
+    unsigned char hall_u_new = 0;
+    unsigned char hall_v_new = 0;
+    unsigned char hall_w_new = 0;
+
+    hall_u_new = Hall_U();
+    hall_v_new = Hall_V();
+    hall_w_new = Hall_W();
+
+    // send speed on u phase
+    if (hall_u_new)
+        SPEED_OUT_ON;
+    else
+        SPEED_OUT_OFF;
+
+    // check rising edge on U
+    if (hall_u_last != hall_u_new)
+    {
+        if ((!hall_u_last) &&
+            (hall_u_new))
+        {
+	    // rising edge on u
+	    Led_Out_Rising_Edge ();
+	    
+            hall_rising_check_u |= 0x01;
+            hall_rising_check_v |= 0x01;
+            hall_rising_check_w |= 0x01;
+            
+            // have rising edge on others?
+            if (hall_rising_check_u == 0x07)
+	    {
+		if (hall_fail_cnt)
+		    hall_fail_cnt--;
+	    }
+            else
+	    {
+		if (hall_fail_cnt < HALL_FAIL_CNT_ROOF)
+		    hall_fail_cnt++;
+	    }
+
+            hall_rising_check_u = 0;
+        }
+        hall_u_last = hall_u_new;
+    }
+
+    // check rising edge on V
+    if (hall_v_last != hall_v_new)
+    {
+        if ((!hall_v_last) &&
+            (hall_v_new))
+        {
+            hall_rising_check_u |= 0x02;
+            hall_rising_check_v |= 0x02;
+            hall_rising_check_w |= 0x02;
+            
+            // have rising edge on others?
+            if (hall_rising_check_v == 0x07)
+	    {
+		if (hall_fail_cnt)
+		    hall_fail_cnt--;
+	    }
+            else
+	    {
+		if (hall_fail_cnt < HALL_FAIL_CNT_ROOF)
+		    hall_fail_cnt++;
+	    }
+
+            hall_rising_check_v = 0;
+        }
+        hall_v_last = hall_v_new;
+    }
+
+    // check rising edge on W
+    if (hall_w_last != hall_w_new)
+    {
+        if ((!hall_w_last) &&
+            (hall_w_new))
+        {
+            hall_rising_check_u |= 0x04;
+            hall_rising_check_v |= 0x04;
+            hall_rising_check_w |= 0x04;
+            
+            // have rising edge on others?
+            if (hall_rising_check_w == 0x07)
+	    {
+		if (hall_fail_cnt)
+		    hall_fail_cnt--;
+	    }
+            else
+	    {
+		if (hall_fail_cnt < HALL_FAIL_CNT_ROOF)
+		    hall_fail_cnt++;
+	    }
+
+            hall_rising_check_w = 0;
+        }
+        hall_w_last = hall_w_new;
+    }
+
+    if (hall_fail_cnt >= HALL_FAIL_CNT_THRESHOLD)
+	HALL_FAIL_ON;
+    else
+	HALL_FAIL_OFF;
+}
+
+
 void Hall_Update_Supervisor (void)
 {
     unsigned char hall_u_new = 0;
@@ -351,4 +464,21 @@ unsigned char Direction (void)
 }
 
 
+// rising edge on U
+unsigned char rising_cnt = 0;
+void Led_Out_Rising_Edge (void)
+{
+    if (rising_cnt < 4 - 1)
+	rising_cnt++;
+    else
+    {
+	rising_cnt = 0;
+	if (Led_Is_On())
+	    Led_Off();
+	else
+	    Led_On();
+
+    }
+    
+}
 //--- end of file ---//

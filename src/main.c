@@ -111,9 +111,11 @@ int main (void)
 
         // Led_Toggle_Update ();
 
-        Hall_Update ();
+        Hall_Update ();    // check hall changes with fast filter
 
-        Hall_Update_Supervisor ();
+        // Hall_Update_Supervisor ();    // check hall fail
+
+        Hall_Update_Supervisor_With_Counter ();    // check hall fail with counter	
 
         Accel_Setting_Update ();
     }
